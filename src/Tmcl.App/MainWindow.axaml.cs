@@ -46,7 +46,13 @@ public partial class MainWindow : Window
         SourceBox.SelectedIndex = settings.SourceMode switch { "BMCLAPI" => 1, "Official" => 2, _ => 0 };
         SourceBox.SelectionChanged += (_, _) => UpdateSourceStatus();
         UpdateSourceStatus();
+        settings.Theme ??= settings.Dark ? "Dark" : "Light";
+        ThemeBox.SelectedIndex = settings.Theme switch { "Light" => 0, "System" => 2, _ => 1 };
         ApplyTheme();
+        StyleBox.SelectedIndex = settings.InterfaceStyle == "Claude" ? 1 : 0;
+        ApplyInterfaceStyle();
+        StyleBox.SelectionChanged += StyleChanged;
+        ThemeBox.SelectionChanged += ThemeChanged;
         LocalOnlyBox.IsCheckedChanged += async (_, _) => { if (!busy) await RunOperation(RefreshVersions); };
         Opened += async (_, _) => await RunOperation(async token =>
         {
@@ -57,12 +63,60 @@ public partial class MainWindow : Window
         Closing += (_, _) => { operation?.Cancel(); try { SaveSettings(); } catch (IOException) { } };
     }
 
-    private void ApplyTheme() => Application.Current!.RequestedThemeVariant = settings.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
-    private void ThemeClick(object? sender, RoutedEventArgs e)
+    private void ApplyTheme() => Application.Current!.RequestedThemeVariant = settings.Theme switch
     {
-        settings.Dark = !settings.Dark;
+        "Light" => ThemeVariant.Light,
+        "System" => ThemeVariant.Default,
+        _ => ThemeVariant.Dark
+    };
+    private void ThemeChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        settings.Theme = ThemeBox.SelectedIndex switch { 0 => "Light", 2 => "System", _ => "Dark" };
+        settings.Dark = settings.Theme == "Dark";
         ApplyTheme();
-        try { SaveSettings(); } catch (Exception ex) { StatusText.Text = "主题已切换，但设置保存失败：" + ex.Message; }
+        // Appearance can be changed even while a download is in progress.
+        try { settings.Save(); StatusText.Text = "主题已更新并保存。"; }
+        catch (Exception ex) { StatusText.Text = "主题已切换，但保存失败：" + ex.Message; }
+    }
+    private void ApplyInterfaceStyle()
+    {
+        bool claude = settings.InterfaceStyle == "Claude";
+        Appearance.Apply(settings.InterfaceStyle);
+        PageTitle.FontSize = claude ? 30 : 28;
+        PageTitle.FontWeight = claude ? Avalonia.Media.FontWeight.Medium : Avalonia.Media.FontWeight.SemiBold;
+        PowerToysBrand.IsVisible = !claude;
+        ClaudeBrand.IsVisible = claude;
+        UpdatePageHeading();
+    }
+    private void StyleChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        settings.InterfaceStyle = StyleBox.SelectedIndex == 1 ? "Claude" : "PowerToys";
+        ApplyInterfaceStyle();
+        try { settings.Save(); StatusText.Text = "界面风格已更新并保存。"; }
+        catch (Exception ex) { StatusText.Text = "界面风格已切换，但保存失败：" + ex.Message; }
+    }
+    private void UpdatePageHeading()
+    {
+        bool showSettings = SettingsView.IsVisible;
+        bool claude = settings.InterfaceStyle == "Claude";
+        PageTitle.Text = showSettings ? (claude ? "外观与偏好" : "启动器设置") : (claude ? "回到你的方块世界" : "开始游戏");
+        PageSubtitle.Text = showSettings ? "管理外观、游戏运行环境与下载选项。" : (claude ? "选好版本，让熟悉的冒险继续。" : "管理游戏版本与账号，启动 Minecraft。");
+    }
+    private void ShowPage(bool showSettings)
+    {
+        SettingsView.IsVisible = showSettings;
+        GameView.IsVisible = !showSettings;
+        GameNavButton.Classes.Set("selected", !showSettings);
+        SettingsNavButton.Classes.Set("selected", showSettings);
+        UpdatePageHeading();
+        MainScroll.Offset = Vector.Zero;
+    }
+    private void GamePageClick(object? sender, RoutedEventArgs e) => ShowPage(false);
+    private void SettingsPageClick(object? sender, RoutedEventArgs e) => ShowPage(true);
+    private void SaveSettingsClick(object? sender, RoutedEventArgs e)
+    {
+        try { SaveSettings(); StatusText.Text = "设置已保存，下次启动游戏时生效。"; }
+        catch (Exception ex) { StatusText.Text = "设置保存失败：" + ex.Message; }
     }
     private void SaveSettings()
     {
@@ -262,7 +316,7 @@ public partial class MainWindow : Window
         if (msal != null) await MsalClientHelper.RemoveAccounts(msal);
         login?.AccountManager.ClearAccounts();
         session = null;
-        AccountText.Text = "尚未登录";
+        AccountText.Text = "微软账号未登录，离线账号可直接使用。";
         AccountModeBox.SelectedIndex = 0;
         StatusText.Text = "已退出微软账号，已切换为离线账号。";
     });

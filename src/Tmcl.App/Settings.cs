@@ -12,7 +12,9 @@ public sealed class Settings
     public string Version { get; set; } = "1.8.9";
     public int Threads { get; set; } = 8;
     public int Memory { get; set; } = (int)Math.Clamp(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1048576 / 2, 1024, 4096);
-    public bool Dark { get; set; } = true;
+    public bool Dark { get; set; } = false;
+    public string? Theme { get; set; }
+    public string InterfaceStyle { get; set; } = "PowerToys";
     public string SourceMode { get; set; } = "Auto";
     public bool? AutoMirror { get; set; }
     public string CountryCode { get; set; } = "";

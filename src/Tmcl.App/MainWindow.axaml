@@ -1,26 +1,127 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="Tmcl.App.MainWindow" Title="TMCL · Minecraft Launcher" Width="1120" Height="800" MinWidth="880" MinHeight="650" Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
- <Grid ColumnDefinitions="220,*" RowDefinitions="*,Auto">
-  <Border Grid.RowSpan="2" Padding="24,32" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
-   <DockPanel LastChildFill="True">
-    <StackPanel DockPanel.Dock="Top" Spacing="8"><TextBlock Text="▣ TMCL" FontSize="30" FontWeight="Bold"/><TextBlock Text="你的方块世界，从这里开始" FontSize="12" Opacity="0.6" Margin="0,0,0,32"/></StackPanel>
-    <StackPanel DockPanel.Dock="Bottom" Spacing="14"><Button x:Name="ThemeButton" Content="☀  切换黑白主题" Click="ThemeClick" HorizontalAlignment="Stretch"/><TextBlock Text="Java Edition · 跨平台" FontSize="12" Opacity="0.5"/></StackPanel>
-    <StackPanel Spacing="12"><TextBlock Text="◈  游戏与下载" FontSize="16" Margin="0,8"/><TextBlock Text="离线 / 微软 · BMCLAPI" Opacity="0.6" FontSize="12"/><Border Height="1" Background="Gray" Opacity="0.2" Margin="0,16"/><TextBlock Text="Windows / Linux / macOS" FontSize="12" Opacity="0.6" TextWrapping="Wrap"/></StackPanel>
-   </DockPanel>
-  </Border>
-  <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-   <StackPanel Margin="32,28" Spacing="18">
-    <Grid ColumnDefinitions="*,Auto"><StackPanel><TextBlock Text="准备好下一场冒险了吗？" FontSize="28" FontWeight="SemiBold"/><TextBlock Text="选择版本，下载完整游戏，一键进入世界。" Margin="0,8,0,0" Opacity="0.6"/></StackPanel><Border Grid.Column="1" VerticalAlignment="Top" CornerRadius="20" Padding="12,6" Background="#243D32"><TextBlock Text="●  JAVA EDITION" Foreground="#88DCAA" FontSize="11"/></Border></Grid>
-    <Border Classes="card"><StackPanel Spacing="14"><TextBlock Text="游戏账号" FontSize="18" FontWeight="SemiBold"/><Grid ColumnDefinitions="*,*"><ComboBox x:Name="AccountModeBox" SelectedIndex="0" HorizontalAlignment="Stretch"><ComboBoxItem Content="离线账号"/><ComboBoxItem Content="微软账号"/></ComboBox><TextBox Grid.Column="1" x:Name="OfflineNameBox" Watermark="离线用户名（3–16 位英文、数字、下划线）" Margin="12,0,0,0"/></Grid><Grid ColumnDefinitions="*,Auto,Auto"><TextBlock x:Name="AccountText" Text="尚未登录" VerticalAlignment="Center"/><Button Grid.Column="1" x:Name="LoginButton" Content="登录微软账号" Click="LoginClick" Margin="0,0,8,0"/><Button Grid.Column="2" x:Name="LogoutButton" Content="退出" Click="LogoutClick"/></Grid></StackPanel></Border>
-    <Border Classes="card"><StackPanel Spacing="14"><TextBlock Text="游戏版本" FontSize="18" FontWeight="SemiBold"/><Grid ColumnDefinitions="*,Auto,Auto"><ComboBox x:Name="VersionBox" HorizontalAlignment="Stretch" PlaceholderText="加载版本列表…"/><CheckBox Grid.Column="1" x:Name="SnapshotBox" Content="快照" Margin="16,0" IsCheckedChanged="FilterChanged"/><Button Grid.Column="2" x:Name="RefreshButton" Content="刷新" Click="RefreshClick"/></Grid><CheckBox x:Name="LocalOnlyBox" Content="断网启动：使用本地已安装文件，跳过下载修复"/><Grid ColumnDefinitions="*,*"><Button x:Name="DownloadButton" Content="↓  下载 / 修复游戏" Click="DownloadClick" HorizontalAlignment="Stretch" Margin="0,0,8,0"/><Button Grid.Column="1" x:Name="LaunchButton" Content="▶  启动 Minecraft" Click="LaunchClick" Classes="accent" HorizontalAlignment="Stretch"/></Grid></StackPanel></Border>
-    <Expander Header="启动与下载设置" IsExpanded="True" HorizontalAlignment="Stretch"><Border Classes="card"><StackPanel x:Name="SettingsPanel" Spacing="12">
-     <TextBlock Text="游戏目录"/><Grid ColumnDefinitions="*,Auto"><TextBox x:Name="PathBox"/><Button Grid.Column="1" Content="选择" Click="FolderClick" Margin="8,0,0,0"/></Grid>
-     <TextBlock Text="Java 可执行文件（留空自动检测 / 安装 OpenJDK）"/><Grid ColumnDefinitions="*,Auto"><TextBox x:Name="JavaBox" Watermark="java / java.exe（留空自动管理）"/><Button Grid.Column="1" Content="选择" Click="JavaClick" Margin="8,0,0,0"/></Grid>
-     <Button Content="检测 / 安装匹配的 OpenJDK" Click="JavaCheckClick" HorizontalAlignment="Left"/><TextBlock x:Name="JavaStatusText" Text="启动前自动检测所需 Java 主版本与系统架构。" FontSize="12" Opacity="0.6" TextWrapping="Wrap"/><Grid ColumnDefinitions="*,*"><StackPanel Spacing="6" Margin="0,0,12,0"><TextBlock Text="最大内存 / MB"/><NumericUpDown x:Name="MemoryBox" Minimum="512" Maximum="65536" Increment="512"/></StackPanel><StackPanel Grid.Column="1" Spacing="6"><TextBlock Text="并发下载数"/><NumericUpDown x:Name="ThreadsBox" Minimum="1" Maximum="32"/></StackPanel></Grid>
-     <TextBlock Text="游戏下载源"/><Grid ColumnDefinitions="*,Auto"><ComboBox x:Name="SourceBox" HorizontalAlignment="Stretch" SelectedIndex="0"><ComboBoxItem Content="自动（IPv4 地区 / 测速推荐）"/><ComboBoxItem Content="BMCLAPI 镜像"/><ComboBoxItem Content="官方源"/></ComboBox><Button Grid.Column="1" Content="检测 IPv4 并测速" Click="SpeedTestClick" Margin="8,0,0,0"/></Grid><TextBlock x:Name="SourceStatusText" Text="中国 IPv4 默认 BMCLAPI；测速后优先更快的源。支持手动覆盖。" FontSize="12" Opacity="0.6" TextWrapping="Wrap"/>
-     <TextBlock Text="Microsoft OAuth Client ID"/><TextBox x:Name="ClientBox" Watermark="填写你注册且获 Minecraft API 授权的应用 ID"/><TextBlock Text="使用系统浏览器登录；授权缓存由系统安全存储保护。配置方法见 README。" FontSize="12" Opacity="0.6" TextWrapping="Wrap"/>
-    </StackPanel></Border></Expander>
-   </StackPanel>
-  </ScrollViewer>
-  <Border Grid.Row="1" Grid.Column="1" Padding="32,16" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"><StackPanel Spacing="8"><Grid ColumnDefinitions="*,Auto"><TextBlock x:Name="StatusText" Text="就绪" TextWrapping="Wrap" VerticalAlignment="Center"/><Button Grid.Column="1" x:Name="CancelButton" Content="取消" IsEnabled="False" Click="CancelClick" Margin="12,0,0,0"/></Grid><ProgressBar x:Name="Progress" Minimum="0" Maximum="100" Height="5"/></StackPanel></Border>
- </Grid>
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="Tmcl.App.MainWindow"
+        Title="TMCL · Minecraft Launcher" Width="1140" Height="820" MinWidth="920" MinHeight="660" Background="{DynamicResource PageBrush}">
+  <Grid ColumnDefinitions="224,*">
+    <Border Padding="12,28,12,20" Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="12,0,0,32">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <Grid x:Name="PowerToysBrand" Width="32" Height="32" ColumnDefinitions="*,*" RowDefinitions="*,*">
+              <Border Background="#0078D4" CornerRadius="3,0,0,0" Margin="0,0,2,2"/><Border Grid.Column="1" Background="#50B7F5" CornerRadius="0,3,0,0" Margin="0,0,0,2"/>
+              <Border Grid.Row="1" Background="#005A9E" CornerRadius="0,0,0,3" Margin="0,0,2,0"/><Border Grid.Row="1" Grid.Column="1" Background="#0099BC" CornerRadius="0,0,3,0"/>
+            </Grid>
+            <Border x:Name="ClaudeBrand" IsVisible="False" Width="32" Height="32" CornerRadius="7" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1.5"><TextBlock Text="T" FontSize="21" FontFamily="Georgia" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+            <TextBlock Text="TMCL" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+          </StackPanel>
+          <TextBlock Text="Minecraft 启动器" FontSize="12" Classes="muted"/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="12,24,0,0">
+          <TextBlock Text="Minecraft Java Edition" FontSize="10" Classes="muted"/>
+          <TextBlock Text="版本 1.0.0" FontSize="11" Classes="muted"/>
+        </StackPanel>
+        <StackPanel Spacing="6">
+          <Button x:Name="GameNavButton" Classes="nav selected" Click="GamePageClick"><StackPanel Orientation="Horizontal" Spacing="14"><Path Data="M3,10 L12,3 L21,10 M5,9 L5,21 L10,21 L10,14 L14,14 L14,21 L19,21 L19,9" Stroke="{DynamicResource InkBrush}" StrokeThickness="1.5" Width="20" Height="20" Stretch="Uniform"/><TextBlock Text="开始游戏" VerticalAlignment="Center"/></StackPanel></Button>
+          <Button x:Name="SettingsNavButton" Classes="nav" Click="SettingsPageClick"><StackPanel Orientation="Horizontal" Spacing="14"><Path Data="M4,6 L20,6 M4,12 L20,12 M4,18 L20,18 M8,3 L8,9 M16,9 L16,15 M10,15 L10,21" Stroke="{DynamicResource InkBrush}" StrokeThickness="1.5" Width="20" Height="20" Stretch="Uniform"/><TextBlock Text="启动器设置" VerticalAlignment="Center"/></StackPanel></Button>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+    <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+      <StackPanel Margin="{DynamicResource PageHeaderMargin}" Spacing="8">
+        <TextBlock Text="TMCL" Classes="muted" FontSize="12"/>
+        <TextBlock x:Name="PageTitle" Text="开始游戏" FontSize="28" FontWeight="SemiBold"/>
+        <TextBlock x:Name="PageSubtitle" Text="管理游戏版本与账号，启动 Minecraft。" Classes="muted"/>
+      </StackPanel>
+      <ScrollViewer x:Name="MainScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="{DynamicResource PageContentMargin}">
+          <StackPanel x:Name="GameView" Spacing="20">
+            <Border Classes="card">
+              <StackPanel Spacing="20">
+                <StackPanel Spacing="6"><TextBlock Text="游戏版本" Classes="section"/><TextBlock Text="选择要下载或启动的 Minecraft 版本。" Classes="muted" FontSize="13"/></StackPanel>
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                  <ComboBox x:Name="VersionBox" HorizontalAlignment="Stretch" PlaceholderText="选择 Minecraft 版本"/>
+                  <CheckBox Grid.Column="1" x:Name="SnapshotBox" Content="显示快照" Margin="16,0" IsCheckedChanged="FilterChanged"/>
+                  <Button Grid.Column="2" x:Name="RefreshButton" Content="刷新" Click="RefreshClick"/>
+                </Grid>
+                <CheckBox x:Name="LocalOnlyBox" Content="断网启动，只使用本地已安装的游戏"/>
+                <Border Height="1" Background="{DynamicResource LineBrush}"/>
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                  <TextBlock Text="缺少的游戏文件与 Java 将自动下载。" Classes="muted" FontSize="12" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                  <Button Grid.Column="1" x:Name="DownloadButton" Content="下载 / 修复" Click="DownloadClick" Margin="0,0,12,0"/>
+                  <Button Grid.Column="2" x:Name="LaunchButton" Content="启动游戏" Click="LaunchClick" Classes="primary" MinWidth="144"/>
+                </Grid>
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="20">
+                <StackPanel Spacing="6"><TextBlock Text="游戏账号" Classes="section"/><TextBlock Text="使用离线用户名开始单人游戏，或登录你的微软账号。" Classes="muted" FontSize="13"/></StackPanel>
+                <Grid ColumnDefinitions="*,*">
+                  <StackPanel Spacing="8" Margin="0,0,8,0"><TextBlock Text="账号类型" Classes="label"/><ComboBox x:Name="AccountModeBox" SelectedIndex="0" HorizontalAlignment="Stretch"><ComboBoxItem Content="离线账号"/><ComboBoxItem Content="微软账号"/></ComboBox></StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="8" Margin="8,0,0,0"><TextBlock Text="离线用户名" Classes="label"/><TextBox x:Name="OfflineNameBox" Watermark="3–16 位英文、数字或下划线"/></StackPanel>
+                </Grid>
+                <Border Height="1" Background="{DynamicResource LineBrush}"/>
+                <Grid ColumnDefinitions="*,Auto,Auto"><TextBlock x:Name="AccountText" Text="微软账号未登录，离线账号可直接使用。" Classes="muted" FontSize="12" VerticalAlignment="Center" Margin="0,0,16,0"/><Button Grid.Column="1" x:Name="LoginButton" Content="登录微软账号" Click="LoginClick" Margin="0,0,8,0"/><Button Grid.Column="2" x:Name="LogoutButton" Content="退出" Click="LogoutClick"/></Grid>
+              </StackPanel>
+            </Border>
+            <TextBlock Text="在「启动器设置」中调整主题、Java、内存与下载源。" Classes="muted" FontSize="12" Margin="4,0"/>
+          </StackPanel>
+          <StackPanel x:Name="SettingsView" IsVisible="False" Spacing="24">
+            <StackPanel Spacing="12">
+              <TextBlock Text="外观" Classes="section"/>
+              <Border Classes="card">
+                <Grid ColumnDefinitions="32,*,220">
+                  <Path Data="M3,4 L21,4 L21,17 L3,17 Z M8,21 L16,21 M12,17 L12,21 M8,8 L16,8 M8,12 L13,12" Stroke="{DynamicResource InkBrush}" StrokeThickness="1.5" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center"/>
+                  <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center" Margin="12,0,24,0"><TextBlock Text="界面风格" FontWeight="SemiBold"/><TextBlock Text="选择喜欢的配色、间距与界面细节。" Classes="muted" FontSize="12"/></StackPanel>
+                  <ComboBox Grid.Column="2" x:Name="StyleBox" HorizontalAlignment="Stretch" VerticalAlignment="Center"><ComboBoxItem Content="PowerToys · Fluent"/><ComboBoxItem Content="Claude · 简约暖色"/></ComboBox>
+                </Grid>
+              </Border>
+              <Border Classes="card">
+                <Grid ColumnDefinitions="32,*,220">
+                  <Path Data="M12,3 C7,3 3,7 3,12 C3,17 7,21 12,21 C15,21 14,17 17,17 C22,17 22,10 18,6 C16,4 14,3 12,3 Z M7,10 L7.1,10 M11,7 L11.1,7 M16,8 L16.1,8" Stroke="{DynamicResource InkBrush}" StrokeThickness="1.5" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center"/>
+                  <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center" Margin="12,0,24,0"><TextBlock Text="应用主题" FontWeight="SemiBold"/><TextBlock Text="选择浅色、深色，或与系统保持一致。" Classes="muted" FontSize="12"/></StackPanel>
+                  <ComboBox Grid.Column="2" x:Name="ThemeBox" HorizontalAlignment="Stretch" VerticalAlignment="Center"><ComboBoxItem Content="浅色"/><ComboBoxItem Content="深色"/><ComboBoxItem Content="跟随系统"/></ComboBox>
+                </Grid>
+              </Border>
+            </StackPanel>
+            <StackPanel x:Name="SettingsPanel" Spacing="24">
+              <StackPanel Spacing="12">
+                <TextBlock Text="游戏与运行环境" Classes="section"/>
+                <StackPanel Spacing="4">
+                  <Border Classes="card"><StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto"><StackPanel Spacing="4"><TextBlock Text="游戏目录" FontWeight="SemiBold"/><TextBlock Text="游戏版本、资源和存档的保存位置。" Classes="muted" FontSize="12"/></StackPanel><Button Grid.Column="1" Content="选择目录" Click="FolderClick" VerticalAlignment="Center" Margin="16,0,0,0"/></Grid>
+                    <TextBox x:Name="PathBox"/>
+                  </StackPanel></Border>
+                  <Border Classes="card"><StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto"><StackPanel Spacing="4" Margin="0,0,16,0"><TextBlock Text="Java" FontWeight="SemiBold"/><TextBlock Text="留空时自动检测并安装匹配的 OpenJDK。" Classes="muted" FontSize="12"/></StackPanel><Button Grid.Column="1" Content="检测 / 安装" Click="JavaCheckClick" VerticalAlignment="Center"/></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><TextBox x:Name="JavaBox" Watermark="自动管理 Java"/><Button Grid.Column="1" Content="选择文件" Click="JavaClick" Margin="12,0,0,0"/></Grid>
+                    <TextBlock x:Name="JavaStatusText" Text="启动时会自动检查 Java 版本与架构。" Classes="muted" FontSize="12"/>
+                  </StackPanel></Border>
+                  <Border Classes="card"><Grid ColumnDefinitions="*,180"><StackPanel Spacing="4" VerticalAlignment="Center" Margin="0,0,24,0"><TextBlock Text="最大游戏内存" FontWeight="SemiBold"/><TextBlock Text="分配给游戏的内存上限，单位 MB。" Classes="muted" FontSize="12"/></StackPanel><NumericUpDown Grid.Column="1" x:Name="MemoryBox" Minimum="512" Maximum="65536" Increment="512" VerticalAlignment="Center"/></Grid></Border>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Spacing="12">
+                <TextBlock Text="下载" Classes="section"/>
+                <StackPanel Spacing="4">
+                  <Border Classes="card"><StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,240"><StackPanel Spacing="4" VerticalAlignment="Center" Margin="0,0,24,0"><TextBlock Text="下载源" FontWeight="SemiBold"/><TextBlock Text="自动选择或手动指定游戏下载源。" Classes="muted" FontSize="12"/></StackPanel><ComboBox Grid.Column="1" x:Name="SourceBox" HorizontalAlignment="Stretch" SelectedIndex="0"><ComboBoxItem Content="自动推荐"/><ComboBoxItem Content="BMCLAPI 镜像"/><ComboBoxItem Content="官方源"/></ComboBox></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><TextBlock x:Name="SourceStatusText" Text="中国 IPv4 默认 BMCLAPI，测速后优先更快的源。" Classes="muted" FontSize="12" VerticalAlignment="Center" Margin="0,0,16,0"/><Button Grid.Column="1" Content="检测 IPv4 并测速" Click="SpeedTestClick"/></Grid>
+                  </StackPanel></Border>
+                  <Border Classes="card"><Grid ColumnDefinitions="*,180"><StackPanel Spacing="4" VerticalAlignment="Center" Margin="0,0,24,0"><TextBlock Text="并发下载数" FontWeight="SemiBold"/><TextBlock Text="同时下载的文件数，范围为 1–32。" Classes="muted" FontSize="12"/></StackPanel><NumericUpDown Grid.Column="1" x:Name="ThreadsBox" Minimum="1" Maximum="32" VerticalAlignment="Center"/></Grid></Border>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Spacing="12">
+                <TextBlock Text="账号" Classes="section"/>
+                <Border Classes="card"><StackPanel Spacing="12">
+                  <StackPanel Spacing="4"><TextBlock Text="微软登录应用 ID" FontWeight="SemiBold"/><TextBlock Text="可选。离线账号无需填写；申请方法见仓库 README。" Classes="muted" FontSize="12"/></StackPanel>
+                  <TextBox x:Name="ClientBox" Watermark="Microsoft OAuth Client ID"/>
+                </StackPanel></Border>
+              </StackPanel>
+              <Button Content="保存设置" Click="SaveSettingsClick" Classes="primary" HorizontalAlignment="Right" MinWidth="120"/>
+            </StackPanel>
+          </StackPanel>
+        </Grid>
+      </ScrollViewer>
+      <Border Grid.Row="2" Padding="{DynamicResource FooterPadding}" Background="{DynamicResource PageBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+        <StackPanel Spacing="12"><Grid ColumnDefinitions="*,Auto"><TextBlock x:Name="StatusText" Text="一切就绪。" Classes="muted" FontSize="12" VerticalAlignment="Center" Margin="0,0,16,0"/><Button Grid.Column="1" x:Name="CancelButton" Content="取消任务" IsEnabled="False" Click="CancelClick"/></Grid><ProgressBar x:Name="Progress" Minimum="0" Maximum="100" Height="3"/></StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
 </Window>

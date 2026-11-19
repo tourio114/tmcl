@@ -12,3 +12,14 @@
 - GitHub Actions 首轮 Windows、Linux、macOS 的 x64 / ARM64 六种包构建全部成功；后续提交仍须以对应提交的 Actions 状态为准。
 
 没有使用真实微软账号进行端到端授权测试，需要用户自行配置已获 Minecraft API 访问权限的 Client ID。Windows / macOS 已构建，尚未在真实桌面上启动游戏。ARM64 旧版 Minecraft 的原生库兼容性取决于游戏版本，不能由启动器构建成功推断。
+
+## 双界面风格与主题验证
+
+2026-11-19 更新：
+
+- Release 编译零警告、零错误；31 项既有自动化测试通过。
+- 在 Linux 原生 Avalonia 窗口中操作设置下拉框，检查 PowerToys 与 Claude 两套风格的浅色、深色、跟随系统六种组合。
+- 实际验证运行中切换配色、边距、控件尺寸和品牌标识，主题与风格选择独立保存；选择 Claude + 跟随系统后重新打开应用，界面和设置选项正确恢复。
+- 旧版设置仅保存 `Dark: true` 时，启动后迁移为深色主题，并使用默认 PowerToys 风格。
+- 截图为实际桌面窗口截图，详见 `powertoys-light.png`、`powertoys-dark.png`、`claude-light.png`、`claude-dark.png`。
+- 未在本次测试中模拟操作系统明暗主题的实时变化；“跟随系统”通过 Avalonia 的系统主题机制实现。
