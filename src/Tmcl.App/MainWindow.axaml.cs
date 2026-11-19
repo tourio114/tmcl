@@ -134,7 +134,7 @@ public partial class MainWindow : Window
     private HttpClient CreateClient()
     {
         var client = new HttpClient(new MirrorHandler(settings.UseMirror)) { Timeout = TimeSpan.FromMinutes(5) };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("TMCL/1.0");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("TMCL/0.10.0");
         return client;
     }
     private MinecraftLauncher CreateLauncher(HttpClient client)
@@ -239,7 +239,7 @@ public partial class MainWindow : Window
         var options = new MLaunchOption
         {
             Session = launchSession!, MaximumRamMb = settings.Memory,
-            GameLauncherName = "TMCL", GameLauncherVersion = "1.0.0"
+            GameLauncherName = "TMCL", GameLauncherVersion = "0.10.0"
         };
         var metadata = await launcher.GetVersionAsync(version, token);
         var major = int.TryParse(metadata.JavaVersion?.MajorVersion, out var required) ? required : 8;

@@ -11,7 +11,7 @@ using var client = new HttpClient(new MirrorHandler(true)) { Timeout = TimeSpan.
 var parameters = MinecraftLauncherParameters.CreateDefault(new MinecraftPath(folder), client);
 foreach (var extractor in parameters.FileExtractors!.OfType<JavaFileExtractor>().ToArray()) parameters.FileExtractors!.Remove(extractor);
 parameters.GameInstaller = new VerifiedInstaller(client, 8) { CheckFileSize = true };
-client.DefaultRequestHeaders.UserAgent.ParseAdd("TMCL/1.0");
+client.DefaultRequestHeaders.UserAgent.ParseAdd("TMCL/0.10.0");
 if (args.Contains("--network-only"))
 {
     using var direct = DownloadSources.CreateIPv4Client();

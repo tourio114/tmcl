@@ -43,7 +43,7 @@ public sealed class DownloadSources(HttpClient directClient)
             }
         };
         var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(15) };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("TMCL/1.0");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("TMCL/0.10.0");
         return client;
     }
     public static NetworkLocation ParseTrace(string trace)

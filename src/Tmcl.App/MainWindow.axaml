@@ -16,7 +16,7 @@
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="12,24,0,0">
           <TextBlock Text="Minecraft Java Edition" FontSize="10" Classes="muted"/>
-          <TextBlock Text="版本 1.0.0" FontSize="11" Classes="muted"/>
+          <TextBlock Text="版本 0.10.0" FontSize="11" Classes="muted"/>
         </StackPanel>
         <StackPanel Spacing="6">
           <Button x:Name="GameNavButton" Classes="nav selected" Click="GamePageClick"><StackPanel Orientation="Horizontal" Spacing="14"><Path Data="M3,10 L12,3 L21,10 M5,9 L5,21 L10,21 L10,14 L14,14 L14,21 L19,21 L19,9" Stroke="{DynamicResource InkBrush}" StrokeThickness="1.5" Width="20" Height="20" Stretch="Uniform"/><TextBlock Text="开始游戏" VerticalAlignment="Center"/></StackPanel></Button>

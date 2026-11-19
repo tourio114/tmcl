@@ -1,5 +1,7 @@
 # TMCL
 
+[下载 v0.10 正式版](https://github.com/tourio114/tmcl/releases/tag/v0.10)
+
 提供 PowerToys / Fluent 与 Claude 暖色两种界面风格的 Minecraft Java Edition 跨平台启动器。使用 Avalonia 构建桌面界面，支持 Windows、Linux 和 macOS。默认选择 Minecraft 1.8.9，使用离线账号，微软登录可选。
 
 ![PowerToys 风格](docs/light.png)
@@ -30,7 +32,9 @@
 
 ## 下载与运行
 
-前往 [Actions](https://github.com/tourio114/tmcl/actions/workflows/build.yml)，打开最近一次成功的 **Build TMCL**，下载对应 `TMCL-*` artifact，先解开 GitHub artifact 的外层 ZIP，再解开其中的发行包。
+正式版本前往 [Releases](https://github.com/tourio114/tmcl/releases) 下载对应系统的 ZIP / TAR.GZ，解压后运行。
+
+开发构建前往 [Actions](https://github.com/tourio114/tmcl/actions/workflows/build.yml)，打开最近一次成功的 **Build TMCL**，下载对应 `TMCL-*` artifact，先解开 GitHub artifact 的外层 ZIP，再解开其中的发行包。
 
 | 系统 | 包名 | 运行方式 |
 | --- | --- | --- |

@@ -21,8 +21,8 @@ elif rid.startswith('osx-'):
     with (app / 'Info.plist').open('wb') as stream:
         plistlib.dump({
             'CFBundleName': 'TMCL', 'CFBundleDisplayName': 'TMCL',
-            'CFBundleIdentifier': 'com.tmcl.launcher', 'CFBundleVersion': '1.0.0',
-            'CFBundleShortVersionString': '1.0.0', 'CFBundlePackageType': 'APPL',
+            'CFBundleIdentifier': 'com.tmcl.launcher', 'CFBundleVersion': '0.10.0',
+            'CFBundleShortVersionString': '0.10.0', 'CFBundlePackageType': 'APPL',
             'CFBundleExecutable': 'TMCL', 'NSHighResolutionCapable': True,
             'LSMinimumSystemVersion': '12.0'
         }, stream)
