@@ -14,7 +14,7 @@ public sealed class Settings
     public int Memory { get; set; } = (int)Math.Clamp(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1048576 / 2, 1024, 4096);
     public bool Dark { get; set; } = false;
     public string? Theme { get; set; }
-    public string InterfaceStyle { get; set; } = "PowerToys";
+    public string InterfaceStyle { get; set; } = "Fluent2";
     public string SourceMode { get; set; } = "Auto";
     public bool? AutoMirror { get; set; }
     public string CountryCode { get; set; } = "";
@@ -23,7 +23,13 @@ public sealed class Settings
     public bool UseMirror => SourceMode switch { "BMCLAPI" => true, "Official" => false, _ => AutoMirror ?? Tmcl.Core.DownloadSources.DefaultMirror(CountryCode) };
     public static Settings Load()
     {
-        try { return JsonSerializer.Deserialize<Settings>(File.ReadAllText(Path.Combine(DataPath, "settings.json"))) ?? new(); }
+        try
+        {
+            var settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(Path.Combine(DataPath, "settings.json"))) ?? new();
+            // Earlier releases named this preference PowerToys. Preserve the user's theme mode.
+            if (settings.InterfaceStyle is not "Claude" and not "Fluent2") settings.InterfaceStyle = "Fluent2";
+            return settings;
+        }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException) { return new(); }
     }
     public void Save()

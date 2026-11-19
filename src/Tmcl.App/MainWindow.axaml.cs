@@ -84,13 +84,13 @@ public partial class MainWindow : Window
         Appearance.Apply(settings.InterfaceStyle);
         PageTitle.FontSize = claude ? 30 : 28;
         PageTitle.FontWeight = claude ? Avalonia.Media.FontWeight.Medium : Avalonia.Media.FontWeight.SemiBold;
-        PowerToysBrand.IsVisible = !claude;
+        FluentBrand.IsVisible = !claude;
         ClaudeBrand.IsVisible = claude;
         UpdatePageHeading();
     }
     private void StyleChanged(object? sender, SelectionChangedEventArgs e)
     {
-        settings.InterfaceStyle = StyleBox.SelectedIndex == 1 ? "Claude" : "PowerToys";
+        settings.InterfaceStyle = StyleBox.SelectedIndex == 1 ? "Claude" : "Fluent2";
         ApplyInterfaceStyle();
         try { settings.Save(); StatusText.Text = "界面风格已更新并保存。"; }
         catch (Exception ex) { StatusText.Text = "界面风格已切换，但保存失败：" + ex.Message; }

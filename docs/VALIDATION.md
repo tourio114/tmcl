@@ -23,3 +23,9 @@
 - 旧版设置仅保存 `Dark: true` 时，启动后迁移为深色主题，并使用默认 PowerToys 风格。
 - 截图为实际桌面窗口截图，详见 `powertoys-light.png`、`powertoys-dark.png`、`claude-light.png`、`claude-dark.png`。
 - 未在本次测试中模拟操作系统明暗主题的实时变化；“跟随系统”通过 Avalonia 的系统主题机制实现。
+
+## Fluent 2 风格更新
+
+2026-11-19：将默认 PowerToys 风格替换为 Fluent 2 风格，调整品牌蓝、中性色层次、4px 控件圆角、8px 卡片圆角、轻量阴影与间距；Claude 的独立配色与明暗模式继续保留。
+
+实际窗口验证了旧 `PowerToys` 设置迁移至 `Fluent2`、浅色 / 深色显示、切换 Claude 后再返回 Fluent 2，以及明暗主题的保存。新版截图见 `fluent2-light.png` / `fluent2-dark.png`。此次更新通过开发构建分发，未改写既有 v0.10 标签和发行文件。

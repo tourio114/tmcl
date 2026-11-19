@@ -5,10 +5,7 @@
       <DockPanel>
         <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="12,0,0,32">
           <StackPanel Orientation="Horizontal" Spacing="12">
-            <Grid x:Name="PowerToysBrand" Width="32" Height="32" ColumnDefinitions="*,*" RowDefinitions="*,*">
-              <Border Background="#0078D4" CornerRadius="3,0,0,0" Margin="0,0,2,2"/><Border Grid.Column="1" Background="#50B7F5" CornerRadius="0,3,0,0" Margin="0,0,0,2"/>
-              <Border Grid.Row="1" Background="#005A9E" CornerRadius="0,0,0,3" Margin="0,0,2,0"/><Border Grid.Row="1" Grid.Column="1" Background="#0099BC" CornerRadius="0,0,3,0"/>
-            </Grid>
+            <Border x:Name="FluentBrand" Width="32" Height="32" CornerRadius="8" Background="{DynamicResource AccentBrush}"><Path Data="M7,8 L25,8 L25,12 L18,12 L18,25 L14,25 L14,12 L7,12 Z" Fill="{DynamicResource AccentInkBrush}" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
             <Border x:Name="ClaudeBrand" IsVisible="False" Width="32" Height="32" CornerRadius="7" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1.5"><TextBlock Text="T" FontSize="21" FontFamily="Georgia" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
             <TextBlock Text="TMCL" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
           </StackPanel>
@@ -32,7 +29,7 @@
       </StackPanel>
       <ScrollViewer x:Name="MainScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <Grid Margin="{DynamicResource PageContentMargin}">
-          <StackPanel x:Name="GameView" Spacing="20">
+          <StackPanel x:Name="GameView" Spacing="24">
             <Border Classes="card">
               <StackPanel Spacing="20">
                 <StackPanel Spacing="6"><TextBlock Text="游戏版本" Classes="section"/><TextBlock Text="选择要下载或启动的 Minecraft 版本。" Classes="muted" FontSize="13"/></StackPanel>
@@ -70,7 +67,7 @@
                 <Grid ColumnDefinitions="32,*,220">
                   <Path Data="M3,4 L21,4 L21,17 L3,17 Z M8,21 L16,21 M12,17 L12,21 M8,8 L16,8 M8,12 L13,12" Stroke="{DynamicResource InkBrush}" StrokeThickness="1.5" Width="20" Height="20" Stretch="Uniform" VerticalAlignment="Center"/>
                   <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center" Margin="12,0,24,0"><TextBlock Text="界面风格" FontWeight="SemiBold"/><TextBlock Text="选择喜欢的配色、间距与界面细节。" Classes="muted" FontSize="12"/></StackPanel>
-                  <ComboBox Grid.Column="2" x:Name="StyleBox" HorizontalAlignment="Stretch" VerticalAlignment="Center"><ComboBoxItem Content="PowerToys · Fluent"/><ComboBoxItem Content="Claude · 简约暖色"/></ComboBox>
+                  <ComboBox Grid.Column="2" x:Name="StyleBox" HorizontalAlignment="Stretch" VerticalAlignment="Center"><ComboBoxItem Content="Fluent 2"/><ComboBoxItem Content="Claude · 简约暖色"/></ComboBox>
                 </Grid>
               </Border>
               <Border Classes="card">

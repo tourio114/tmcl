@@ -2,26 +2,28 @@
 
 [下载 v0.10 正式版](https://github.com/tourio114/tmcl/releases/tag/v0.10)
 
-提供 PowerToys / Fluent 与 Claude 暖色两种界面风格的 Minecraft Java Edition 跨平台启动器。使用 Avalonia 构建桌面界面，支持 Windows、Linux 和 macOS。默认选择 Minecraft 1.8.9，使用离线账号，微软登录可选。
+提供 Fluent 2 与 Claude 暖色两种界面风格的 Minecraft Java Edition 跨平台启动器。使用 Avalonia 构建桌面界面，支持 Windows、Linux 和 macOS。默认选择 Minecraft 1.8.9，使用离线账号，微软登录可选。
 
-![PowerToys 风格](docs/light.png)
+![Fluent 2 风格](docs/light.png)
 
 ## 界面与主题
 
-打开左侧 **启动器设置 → 外观**：
+Fluent 2 界面可从最新 [开发构建](https://github.com/tourio114/tmcl/actions/workflows/build.yml) 下载；已发布的 v0.10 保留原发布内容。
 
-- **界面风格**：PowerToys · Fluent（紧凑、灰白底色、蓝色强调）或 Claude · 简约暖色（暖白 / 炭灰、陶土色、宽松留白）。
+打开左侧 **启动器设置 → 外观**。Fluent 2 风格参考微软的 [布局](https://fluent2.microsoft.design/layout)、[形状](https://fluent2.microsoft.design/shapes) 与 [颜色](https://fluent2.microsoft.design/color) 指南，通过 Avalonia 实现：
+
+- **界面风格**：Fluent 2（中性色层次、品牌蓝、4px 控件圆角与统一间距）或 Claude · 简约暖色（暖白 / 炭灰、陶土色、宽松留白）。
 - **应用主题**：浅色、深色、跟随系统。两种界面风格均支持这三种明暗模式。
-- 切换立即生效并自动保存；重启后恢复。下载任务执行中也能切换外观，旧版黑白主题偏好会自动迁移。其他设置可以点击页面底部的“保存设置”。
+- 切换立即生效并自动保存；重启后恢复。下载任务执行中也能切换外观，旧版 PowerToys 风格及黑白主题偏好会自动迁移。其他设置可以点击页面底部的“保存设置”。
 
 | 界面风格 | 浅色预览 | 深色预览 |
 | --- | --- | --- |
-| PowerToys · Fluent | [查看](docs/powertoys-light.png) | [查看](docs/powertoys-dark.png) |
+| Fluent 2 | [查看](docs/fluent2-light.png) | [查看](docs/fluent2-dark.png) |
 | Claude · 简约暖色 | [查看](docs/claude-light.png) | [查看](docs/claude-dark.png) |
 
 ## 功能
 
-- 中文界面、PowerToys / Claude 两种风格，各支持浅色、深色、跟随系统；外观选项立即生效并自动保存。
+- 中文界面、Fluent 2 / Claude 两种风格，各支持浅色、深色、跟随系统；外观选项立即生效并自动保存。
 - 正式版 / 快照列表、本地版本扫描、断网启动。
 - 下载源选择：自动 / BMCLAPI / 官方。通过 IPv4 检测地区，中国默认 BMCLAPI、其他地区默认官方；测速后自动模式采用更快的源，手动选择优先。BMCLAPI 请求失败或节点超时会尝试官方源。
 - 1–32 路并发文件下载，已有文件校验、SHA-1 校验、失败重试、取消任务、临时文件清理。重新下载会复用校验通过的文件；尚不支持单文件断点续传。
