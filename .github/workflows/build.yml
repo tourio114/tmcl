@@ -1,0 +1,54 @@
+name: Build TMCL
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: windows-latest
+            rid: win-arm64
+          - os: ubuntu-22.04
+            rid: linux-x64
+          - os: ubuntu-22.04
+            rid: linux-arm64
+          - os: macos-latest
+            rid: osx-x64
+          - os: macos-latest
+            rid: osx-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Test download integrity, retries and cancellation
+        run: dotnet test tests/Tmcl.Tests -c Release --logger trx --results-directory TestResults
+      - name: Publish self-contained desktop app
+        run: dotnet publish src/Tmcl.App -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishTrimmed=false -o artifacts/publish
+      - name: Package
+        run: python scripts/package.py ${{ matrix.rid }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TMCL-${{ matrix.rid }}
+          path: |
+            artifacts/TMCL-*.zip
+            artifacts/TMCL-*.tar.gz
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.rid }}
+          path: TestResults/*.trx

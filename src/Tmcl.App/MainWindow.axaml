@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="Tmcl.App.MainWindow" Title="TMCL · Minecraft Launcher" Width="1120" Height="800" MinWidth="880" MinHeight="650" Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+ <Grid ColumnDefinitions="220,*" RowDefinitions="*,Auto">
+  <Border Grid.RowSpan="2" Padding="24,32" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+   <DockPanel LastChildFill="True">
+    <StackPanel DockPanel.Dock="Top" Spacing="8"><TextBlock Text="▣ TMCL" FontSize="30" FontWeight="Bold"/><TextBlock Text="你的方块世界，从这里开始" FontSize="12" Opacity="0.6" Margin="0,0,0,32"/></StackPanel>
+    <StackPanel DockPanel.Dock="Bottom" Spacing="14"><Button x:Name="ThemeButton" Content="☀  切换黑白主题" Click="ThemeClick" HorizontalAlignment="Stretch"/><TextBlock Text="Java Edition · 跨平台" FontSize="12" Opacity="0.5"/></StackPanel>
+    <StackPanel Spacing="12"><TextBlock Text="◈  游戏与下载" FontSize="16" Margin="0,8"/><TextBlock Text="离线 / 微软 · BMCLAPI" Opacity="0.6" FontSize="12"/><Border Height="1" Background="Gray" Opacity="0.2" Margin="0,16"/><TextBlock Text="Windows / Linux / macOS" FontSize="12" Opacity="0.6" TextWrapping="Wrap"/></StackPanel>
+   </DockPanel>
+  </Border>
+  <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+   <StackPanel Margin="32,28" Spacing="18">
+    <Grid ColumnDefinitions="*,Auto"><StackPanel><TextBlock Text="准备好下一场冒险了吗？" FontSize="28" FontWeight="SemiBold"/><TextBlock Text="选择版本，下载完整游戏，一键进入世界。" Margin="0,8,0,0" Opacity="0.6"/></StackPanel><Border Grid.Column="1" VerticalAlignment="Top" CornerRadius="20" Padding="12,6" Background="#243D32"><TextBlock Text="●  JAVA EDITION" Foreground="#88DCAA" FontSize="11"/></Border></Grid>
+    <Border Classes="card"><StackPanel Spacing="14"><TextBlock Text="游戏账号" FontSize="18" FontWeight="SemiBold"/><Grid ColumnDefinitions="*,*"><ComboBox x:Name="AccountModeBox" SelectedIndex="0" HorizontalAlignment="Stretch"><ComboBoxItem Content="离线账号"/><ComboBoxItem Content="微软账号"/></ComboBox><TextBox Grid.Column="1" x:Name="OfflineNameBox" Watermark="离线用户名（3–16 位英文、数字、下划线）" Margin="12,0,0,0"/></Grid><Grid ColumnDefinitions="*,Auto,Auto"><TextBlock x:Name="AccountText" Text="尚未登录" VerticalAlignment="Center"/><Button Grid.Column="1" x:Name="LoginButton" Content="登录微软账号" Click="LoginClick" Margin="0,0,8,0"/><Button Grid.Column="2" x:Name="LogoutButton" Content="退出" Click="LogoutClick"/></Grid></StackPanel></Border>
+    <Border Classes="card"><StackPanel Spacing="14"><TextBlock Text="游戏版本" FontSize="18" FontWeight="SemiBold"/><Grid ColumnDefinitions="*,Auto,Auto"><ComboBox x:Name="VersionBox" HorizontalAlignment="Stretch" PlaceholderText="加载版本列表…"/><CheckBox Grid.Column="1" x:Name="SnapshotBox" Content="快照" Margin="16,0" IsCheckedChanged="FilterChanged"/><Button Grid.Column="2" x:Name="RefreshButton" Content="刷新" Click="RefreshClick"/></Grid><CheckBox x:Name="LocalOnlyBox" Content="断网启动：使用本地已安装文件，跳过下载修复"/><Grid ColumnDefinitions="*,*"><Button x:Name="DownloadButton" Content="↓  下载 / 修复游戏" Click="DownloadClick" HorizontalAlignment="Stretch" Margin="0,0,8,0"/><Button Grid.Column="1" x:Name="LaunchButton" Content="▶  启动 Minecraft" Click="LaunchClick" Classes="accent" HorizontalAlignment="Stretch"/></Grid></StackPanel></Border>
+    <Expander Header="启动与下载设置" IsExpanded="True" HorizontalAlignment="Stretch"><Border Classes="card"><StackPanel x:Name="SettingsPanel" Spacing="12">
+     <TextBlock Text="游戏目录"/><Grid ColumnDefinitions="*,Auto"><TextBox x:Name="PathBox"/><Button Grid.Column="1" Content="选择" Click="FolderClick" Margin="8,0,0,0"/></Grid>
+     <TextBlock Text="Java 可执行文件（留空自动检测 / 安装 OpenJDK）"/><Grid ColumnDefinitions="*,Auto"><TextBox x:Name="JavaBox" Watermark="java / javaw.exe"/><Button Grid.Column="1" Content="选择" Click="JavaClick" Margin="8,0,0,0"/></Grid>
+     <Grid ColumnDefinitions="*,*"><StackPanel Spacing="6" Margin="0,0,12,0"><TextBlock Text="最大内存 / MB"/><NumericUpDown x:Name="MemoryBox" Minimum="512" Maximum="65536" Increment="512"/></StackPanel><StackPanel Grid.Column="1" Spacing="6"><TextBlock Text="并发下载数"/><NumericUpDown x:Name="ThreadsBox" Minimum="1" Maximum="32"/></StackPanel></Grid>
+     <CheckBox x:Name="MirrorBox" Content="使用 BMCLAPI 镜像（失败时尝试官方源）"/>
+     <TextBlock Text="Microsoft OAuth Client ID"/><TextBox x:Name="ClientBox" Watermark="填写你注册且获 Minecraft API 授权的应用 ID"/><TextBlock Text="使用系统浏览器登录；授权缓存由系统安全存储保护。配置方法见 README。" FontSize="12" Opacity="0.6" TextWrapping="Wrap"/>
+    </StackPanel></Border></Expander>
+   </StackPanel>
+  </ScrollViewer>
+  <Border Grid.Row="1" Grid.Column="1" Padding="32,16" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"><StackPanel Spacing="8"><Grid ColumnDefinitions="*,Auto"><TextBlock x:Name="StatusText" Text="就绪" TextWrapping="Wrap" VerticalAlignment="Center"/><Button Grid.Column="1" x:Name="CancelButton" Content="取消" IsEnabled="False" Click="CancelClick" Margin="12,0,0,0"/></Grid><ProgressBar x:Name="Progress" Minimum="0" Maximum="100" Height="5"/></StackPanel></Border>
+ </Grid>
+</Window>
