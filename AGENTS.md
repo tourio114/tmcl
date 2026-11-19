@@ -130,3 +130,15 @@ Linux 实测所需依赖包括 `x11-xserver-utils`（提供 xrandr）；缺失�
 - 补齐下载源映射，验证 branch、profile 继承和安装失败清理。
 - 实测 Forge 1.8.9；Fabric 用官方支持的版本测试查询/安装，不在这台低配服务器启动较新游戏。
 - 更新 README / 验证记录，上传 GitHub 并核对 CI。没有用户新授权时不改写 v0.10 发布。
+
+## 最新暂停与微软登录交接
+
+- 用户明确表示先睡觉、明天再继续；当前暂停，不自动继续重构、安装加载器或发布。
+- 明天优先任务：研究并完善微软账号登录。用户此前说可继续重构，但最后要求暂停；恢复后先检查现有实现，避免重复造轮子。
+- 本次仅阅读现有登录代码与官方文档，没有修改应用代码，也没有改动已发布的 v0.10。
+- 现有路径：MainWindow.EnsureLogin / LoginClick → MSAL 系统浏览器 → Xbox Live / XSTS → Minecraft profile。已有登录按钮、退出、Client ID 设置、系统安全缓存及内存回退。
+- 依赖中的 MsalClientHelper.BuildApplication 使用 consumers 租户、回调 http://localhost，Xbox scope 为 XboxLive.signin。新应用需支持个人 Microsoft 账号；桌面公共客户端不使用 Client Secret。
+- 已核对微软文档：https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app 与 https://learn.microsoft.com/en-us/entra/identity-platform/scenario-desktop-app-configuration 。注意后者的公共客户端开关说明包含 device-code 等不同流程，不能把所有选项混为一谈。
+- Minecraft 旧帮助文章目前浏览工具只能读取页面框架，不能据此确认现行审批流程；https://aka.ms/mce-reviewappid 仍重定向到 forms.office.com，但表单正文未能读取，不能保证申请可用或一定获批。
+- 用户尚未提供自己的 Client ID；真实微软账号授权仍未端到端验证。不要声称已登录成功，也不要借用 HMCL / 其他启动器的 Client ID。
+- 后续应先明确用户是在配置 TMCL 的开发者应用，还是在使用已配置的启动器登录；再验证注册、回调、Xbox / Minecraft 服务访问与错误提示。Forge / Fabric 仍仅完成研究，未实现。
