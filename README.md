@@ -1,12 +1,16 @@
 # TMCL
 
-具有 WinUI 3 / Fluent 风格的 Minecraft Java Edition 跨平台启动器。使用 Avalonia 构建桌面界面，支持 Windows、Linux 和 macOS。默认使用离线账号，微软登录可选。
+具有 WinUI 3 / Fluent 风格的 Minecraft Java Edition 跨平台启动器。使用 Avalonia 构建桌面界面，支持 Windows、Linux 和 macOS。默认选择 Minecraft 1.8.9，使用离线账号，微软登录可选。
+
+![黑色主题](docs/dark.png)
+
+[查看白色主题](docs/light.png)
 
 ## 功能
 
 - 中文界面、黑白主题切换，设置自动保存。
 - 正式版 / 快照列表、本地版本扫描、断网启动。
-- BMCLAPI 镜像：版本清单、客户端、资源、依赖；请求失败自动尝试官方源。
+- 下载源选择：自动 / BMCLAPI / 官方。通过 IPv4 检测地区，中国默认 BMCLAPI、其他地区默认官方；测速后自动模式采用更快的源，手动选择优先。BMCLAPI 请求失败或节点超时会尝试官方源。
 - 1–32 路并发文件下载，已有文件校验、SHA-1 校验、失败重试、取消任务、临时文件清理。重新下载会复用校验通过的文件；尚不支持单文件断点续传。
 - 离线账号（3–16 位英文、数字、下划线），不要求微软登录。离线账号不能连接启用正版验证的服务器。
 - 可选微软账号：MSAL 系统浏览器 OAuth、Xbox Live / XSTS / Minecraft 登录、启动前刷新授权、退出账号。不会收集密码，也不会把启动参数或访问令牌写入日志。
@@ -23,13 +27,15 @@
 | Linux x64 / ARM64 | `TMCL-linux-x64` / `TMCL-linux-arm64` | 解开 `.tar.gz` 后运行 `./TMCL/TMCL` |
 | macOS Intel / Apple Silicon | `TMCL-osx-x64` / `TMCL-osx-arm64` | 解开 `.tar.gz` 后打开 `TMCL.app` |
 
-包自带 .NET 运行时，无需安装 .NET。Linux 需要图形桌面 / X11 或 XWayland、字体与系统图形库。Ubuntu 可安装 `libx11-6 libice6 libsm6 libfontconfig1 libfreetype6 libgl1`；中文显示需中文字体，例如 `fonts-noto-cjk`。安全缓存需要可用的系统钥匙串 / Secret Service；不可用时仅在内存中保留登录。
+包自带 .NET 运行时，无需安装 .NET。Linux 需要图形桌面 / X11 或 XWayland、字体与系统图形库。Ubuntu 可安装 `libx11-6 libice6 libsm6 libfontconfig1 libfreetype6 libgl1 x11-xserver-utils`；中文显示需中文字体，例如 `fonts-noto-cjk`。安全缓存需要可用的系统钥匙串 / Secret Service；不可用时仅在内存中保留登录。
 
 macOS 包进行临时签名，没有 Apple Developer 公证；首次打开可在系统设置中允许打开。ARM64 启动器与 Minecraft 游戏本身的 ARM64 支持不同，较老游戏版本或原生依赖可能需要 x64 启动器及操作系统模拟支持。Java 自动安装不会修改系统 `JAVA_HOME` 或 `PATH`，不需要管理员权限。
 
 1. 保持“离线账号”，输入用户名；或按下文配置后登录微软。
 2. 选择版本，点击“下载 / 修复游戏”。首次启动时自动检测并安装所需 OpenJDK。
 3. 点击“启动 Minecraft”。游戏已完整安装且 Java 已就绪时，可以勾选“断网启动”。
+
+“检测 IPv4 并测速”通过 IPv4 请求 Cloudflare trace 获取公网 IPv4 和地区，再分别读取官方与 BMCLAPI 的同一资源最多 256 KiB；测速结果包含连接耗时，只代表当时线路。自动模式首次运行以及地区缓存超过一天时检测 IPv4；手动下载源不会被自动推荐覆盖。网络变化后可重新测速。
 
 游戏文件默认放在用户数据目录下的 `TMCL/.minecraft`；支持自行更改。界面里的 Java 路径留空即可自动管理。如果手动路径无效或版本 / 架构不匹配，会给出提示；清空即可重新启用自动管理。OpenJDK 由 Adoptium 官方 API 获取，独立于 BMCLAPI 开关。
 
@@ -66,8 +72,8 @@ python scripts/package.py linux-x64
 可选联网集成测试，会实际下载游戏和 OpenJDK；`--launch` 需要图形环境，会启动游戏 30 秒后关闭测试启动的进程：
 
 ```bash
-dotnet run --project tools/Tmcl.Smoke -- 1.21.1 /tmp/tmcl-integration --java-only
-dotnet run --project tools/Tmcl.Smoke -- 1.21.1 /tmp/tmcl-integration --launch
+dotnet run --project tools/Tmcl.Smoke -- 1.8.9 /tmp/tmcl-integration --java-only
+dotnet run --project tools/Tmcl.Smoke -- 1.8.9 /tmp/tmcl-integration --launch
 ```
 
 测试覆盖镜像域名转换、官方源回退、请求头保留、并发上限、损坏文件修复、校验失败不发布、取消后清理与重试，以及 Java 主版本解析和无效手动路径处理。

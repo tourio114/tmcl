@@ -43,10 +43,17 @@ public partial class MainWindow : Window
         AccountModeBox.SelectedIndex = settings.MicrosoftMode ? 1 : 0;
         ThreadsBox.Value = Math.Clamp(settings.Threads, 1, 32);
         MemoryBox.Value = Math.Clamp(settings.Memory, 512, 65536);
-        MirrorBox.IsChecked = settings.Mirror;
+        SourceBox.SelectedIndex = settings.SourceMode switch { "BMCLAPI" => 1, "Official" => 2, _ => 0 };
+        SourceBox.SelectionChanged += (_, _) => UpdateSourceStatus();
+        UpdateSourceStatus();
         ApplyTheme();
         LocalOnlyBox.IsCheckedChanged += async (_, _) => { if (!busy) await RunOperation(RefreshVersions); };
-        Opened += async (_, _) => await RunOperation(RefreshVersions);
+        Opened += async (_, _) => await RunOperation(async token =>
+        {
+            if (settings.SourceMode == "Auto" && (settings.NetworkDetectedAt == null || DateTimeOffset.UtcNow - settings.NetworkDetectedAt > TimeSpan.FromDays(1)))
+                await DetectNetwork(token);
+            await RefreshVersions(token);
+        });
         Closing += (_, _) => { operation?.Cancel(); try { SaveSettings(); } catch (IOException) { } };
     }
 
@@ -66,13 +73,13 @@ public partial class MainWindow : Window
         settings.MicrosoftMode = AccountModeBox.SelectedIndex == 1;
         settings.Threads = Math.Clamp((int)(ThreadsBox.Value ?? 8), 1, 32);
         settings.Memory = Math.Clamp((int)(MemoryBox.Value ?? 4096), 512, 65536);
-        settings.Mirror = MirrorBox.IsChecked == true;
+        settings.SourceMode = SourceBox.SelectedIndex switch { 1 => "BMCLAPI", 2 => "Official", _ => "Auto" };
         settings.Version = VersionBox.SelectedItem as string ?? settings.Version;
         settings.Save();
     }
     private HttpClient CreateClient()
     {
-        var client = new HttpClient(new MirrorHandler(settings.Mirror)) { Timeout = TimeSpan.FromMinutes(5) };
+        var client = new HttpClient(new MirrorHandler(settings.UseMirror)) { Timeout = TimeSpan.FromMinutes(5) };
         client.DefaultRequestHeaders.UserAgent.ParseAdd("TMCL/1.0");
         return client;
     }
@@ -95,7 +102,7 @@ public partial class MainWindow : Window
         Progress.Value = 0;
         Progress.IsIndeterminate = true;
         try { SaveSettings(); await action(operation.Token); }
-        catch (OperationCanceledException) { StatusText.Text = "操作已取消，可重新下载继续校验已有文件。"; }
+        catch (OperationCanceledException) when (operation.IsCancellationRequested) { StatusText.Text = "操作已取消，可重新下载继续校验已有文件。"; }
         catch (Exception ex)
         {
             // Never write full authentication exceptions, request URLs, or launch arguments to disk.
@@ -185,11 +192,28 @@ public partial class MainWindow : Window
         var javaProgress = new Progress<string>(message => { StatusText.Text = message; Progress.IsIndeterminate = true; });
         options.JavaPath = await new JavaService(client, Path.Combine(Settings.DataPath, "java"))
             .Ensure(major, settings.JavaPath, LocalOnlyBox.IsChecked != true, javaProgress, token);
-        using var process = await launcher.BuildProcessAsync(version, options, token);
+        var process = await launcher.BuildProcessAsync(version, options, token);
         token.ThrowIfCancellationRequested();
-        process.Start();
-        StatusText.Text = $"Minecraft {version} 已启动（PID {process.Id}）。";
+        try { if (!process.Start()) throw new IOException("Java 进程未能启动。"); }
+        catch { process.Dispose(); throw; }
+        var gamePid = process.Id;
+        _ = ObserveGame(process, version);
+        StatusText.Text = $"Minecraft {version} 已启动（PID {gamePid}）。";
         Progress.Value = 100;
+    }
+    private async Task ObserveGame(System.Diagnostics.Process process, string version)
+    {
+        try
+        {
+            await process.WaitForExitAsync();
+            var exitCode = process.ExitCode;
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (!busy) StatusText.Text = exitCode == 0 ? $"Minecraft {version} 已关闭。"
+                    : $"Minecraft {version} 异常退出（{exitCode}）。请查看游戏目录的 logs / crash-reports。";
+            });
+        }
+        finally { process.Dispose(); }
     }
     private async Task EnsureLogin(CancellationToken token)
     {
@@ -248,6 +272,58 @@ public partial class MainWindow : Window
         var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "选择游戏目录", AllowMultiple = false });
         if (result.FirstOrDefault()?.TryGetLocalPath() is { } path) PathBox.Text = path;
     }
+    private void UpdateSourceStatus()
+    {
+        var mode = SourceBox.SelectedIndex;
+        var useMirror = mode == 1 || (mode == 0 && (settings.AutoMirror ?? DownloadSources.DefaultMirror(settings.CountryCode)));
+        var location = string.IsNullOrEmpty(settings.IPv4) ? "IPv4 地区待检测" : $"IPv4 {settings.IPv4} · {settings.CountryCode}";
+        SourceStatusText.Text = $"{location} · 当前{(mode == 0 ? "自动" : "手动")}选择：{(useMirror ? "BMCLAPI" : "官方源")}";
+    }
+    private async Task DetectNetwork(CancellationToken token)
+    {
+        try
+        {
+            StatusText.Text = "正在检测公网 IPv4 和地区…";
+            using var client = DownloadSources.CreateIPv4Client();
+            var location = await new DownloadSources(client).DetectIPv4(token);
+            if (settings.IPv4 != location.IPv4 || settings.CountryCode != location.CountryCode) settings.AutoMirror = null;
+            settings.IPv4 = location.IPv4;
+            settings.CountryCode = location.CountryCode;
+            settings.NetworkDetectedAt = DateTimeOffset.UtcNow;
+            settings.Save();
+            UpdateSourceStatus();
+        }
+        catch (Exception ex) when (!token.IsCancellationRequested && ex is HttpRequestException or IOException or OperationCanceledException)
+        { SourceStatusText.Text = "IPv4 地区检测暂不可用；可手动选择源或进行测速。"; }
+    }
+    private async void SpeedTestClick(object? sender, RoutedEventArgs e) => await RunOperation(async token =>
+    {
+        await DetectNetwork(token);
+        StatusText.Text = "正在测速官方与 BMCLAPI（同一资源，每源最多 256 KiB）…";
+        using var client = DownloadSources.CreateIPv4Client();
+        var sources = new DownloadSources(client);
+        var official = await sources.Measure(false, token);
+        var mirror = await sources.Measure(true, token);
+        settings.AutoMirror = DownloadSources.Recommend(official, mirror, settings.UseMirror);
+        settings.Save();
+        UpdateSourceStatus();
+        SourceStatusText.Text += $"\n官方：{official.Display} · BMCLAPI：{mirror.Display}";
+        StatusText.Text = SourceBox.SelectedIndex == 0
+            ? $"测速完成，自动选择：{(settings.UseMirror ? "BMCLAPI" : "官方源")}。"
+            : "测速完成，已保留你手动指定的下载源；切换到自动可使用测速推荐。";
+    });
+    private async void JavaCheckClick(object? sender, RoutedEventArgs e) => await RunOperation(async token =>
+    {
+        var version = VersionBox.SelectedItem as string ?? throw new InvalidOperationException("请先选择游戏版本。");
+        using var client = CreateClient();
+        var metadata = await CreateLauncher(client).GetVersionAsync(version, token);
+        var major = int.TryParse(metadata.JavaVersion?.MajorVersion, out var required) ? required : 8;
+        var progress = new Progress<string>(message => { StatusText.Text = message; JavaStatusText.Text = message; });
+        var java = await new JavaService(client, Path.Combine(Settings.DataPath, "java"))
+            .Ensure(major, settings.JavaPath, LocalOnlyBox.IsChecked != true, progress, token);
+        JavaStatusText.Text = $"Java {major} / {JavaService.Architecture} · {java}";
+        StatusText.Text = $"Java {major} 已就绪。";
+    });
     private async void JavaClick(object? sender, RoutedEventArgs e)
     {
         var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "选择 Java 可执行文件", AllowMultiple = false });

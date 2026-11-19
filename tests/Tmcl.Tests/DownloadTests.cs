@@ -105,6 +105,23 @@ public sealed class DownloadTests : IDisposable
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(new[] { "bmclapi2.bangbang93.com", "bmclapi2.bangbang93.com", "libraries.minecraft.net" }, hosts);
     }
+    [Fact]
+    public async Task SlowMirrorFallsBackAndUserCancellationIsNotRetried()
+    {
+        var hosts = new List<string>();
+        using var client = new HttpClient(new MirrorHandler(true, new Stub(async (req, ct) =>
+        {
+            hosts.Add(req.RequestUri!.Host);
+            if (req.RequestUri.Host.StartsWith("bmclapi")) await Task.Delay(5000, ct);
+            return Ok(Data);
+        }), TimeSpan.FromMilliseconds(30)));
+        using var response = await client.GetAsync("https://libraries.minecraft.net/a.jar");
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal(new[] { "bmclapi2.bangbang93.com", "libraries.minecraft.net" }, hosts);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync("https://libraries.minecraft.net/b.jar", cancellation.Token));
+    }
     private static HttpResponseMessage Ok(byte[] bytes) => new(HttpStatusCode.OK) { Content = new ByteArrayContent(bytes) };
     private sealed class Stub(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
     {

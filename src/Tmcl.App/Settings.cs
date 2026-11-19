@@ -3,17 +3,22 @@ using System.Text.Json;
 namespace Tmcl.App;
 public sealed class Settings
 {
-    public static string DataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TMCL");
+    public static string DataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify), "TMCL");
     public string GamePath { get; set; } = Path.Combine(DataPath, ".minecraft");
     public string OfflineName { get; set; } = "Player";
     public bool MicrosoftMode { get; set; }
     public string ClientId { get; set; } = "";
     public string JavaPath { get; set; } = "";
-    public string Version { get; set; } = "";
+    public string Version { get; set; } = "1.8.9";
     public int Threads { get; set; } = 8;
     public int Memory { get; set; } = (int)Math.Clamp(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1048576 / 2, 1024, 4096);
     public bool Dark { get; set; } = true;
-    public bool Mirror { get; set; } = true;
+    public string SourceMode { get; set; } = "Auto";
+    public bool? AutoMirror { get; set; }
+    public string CountryCode { get; set; } = "";
+    public string IPv4 { get; set; } = "";
+    public DateTimeOffset? NetworkDetectedAt { get; set; }
+    public bool UseMirror => SourceMode switch { "BMCLAPI" => true, "Official" => false, _ => AutoMirror ?? Tmcl.Core.DownloadSources.DefaultMirror(CountryCode) };
     public static Settings Load()
     {
         try { return JsonSerializer.Deserialize<Settings>(File.ReadAllText(Path.Combine(DataPath, "settings.json"))) ?? new(); }
