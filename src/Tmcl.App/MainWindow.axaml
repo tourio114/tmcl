@@ -55,7 +55,15 @@
                   <StackPanel Grid.Column="1" Spacing="8" Margin="8,0,0,0"><TextBlock Text="离线用户名" Classes="label"/><TextBox x:Name="OfflineNameBox" Watermark="3–16 位英文、数字或下划线"/></StackPanel>
                 </Grid>
                 <Border Height="1" Background="{DynamicResource LineBrush}"/>
-                <Grid ColumnDefinitions="*,Auto,Auto"><TextBlock x:Name="AccountText" Text="微软账号未登录，离线账号可直接使用。" Classes="muted" FontSize="12" VerticalAlignment="Center" Margin="0,0,16,0"/><Button Grid.Column="1" x:Name="LoginButton" Content="登录微软账号" Click="LoginClick" Margin="0,0,8,0"/><Button Grid.Column="2" x:Name="LogoutButton" Content="退出" Click="LogoutClick"/></Grid>
+                <TextBlock x:Name="AccountText" Text="微软账号未登录，离线账号可直接使用。" Classes="muted" FontSize="12"/>
+                <WrapPanel Orientation="Horizontal"><Button x:Name="LoginButton" Content="登录微软账号" Click="LoginClick" Margin="0,0,8,8"/><Button x:Name="SwitchAccountButton" Content="切换微软账号" Click="SwitchAccountClick" Margin="0,0,8,8"/><Button x:Name="LogoutButton" Content="退出" Click="LogoutClick" Margin="0,0,8,8"/><Button x:Name="ConfigureLoginButton" Content="配置微软登录" Click="ConfigureLoginClick" Margin="0,0,0,8"/></WrapPanel>
+                <SelectableTextBlock x:Name="AuthStatusText" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"/>
+                <StackPanel x:Name="AuthCodePanel" IsVisible="False" Spacing="8">
+                  <TextBlock Text="微软验证地址与登录代码" Classes="label"/>
+                  <SelectableTextBlock x:Name="AuthVerificationText" TextWrapping="Wrap"/>
+                  <Grid ColumnDefinitions="200,Auto"><TextBox x:Name="AuthCodeBox" IsReadOnly="True" FontSize="20" FontWeight="SemiBold"/><Button Grid.Column="1" x:Name="OpenVerificationButton" Content="打开微软验证页面" Click="OpenVerificationClick" Margin="12,0,0,0"/></Grid>
+                  <TextBlock Text="只在微软验证页面输入代码。等待授权期间请保持启动器打开，可随时取消。" Classes="muted" FontSize="12"/>
+                </StackPanel>
               </StackPanel>
             </Border>
             <TextBlock Text="在「启动器设置」中调整主题、Java、内存与下载源。" Classes="muted" FontSize="12" Margin="4,0"/>
@@ -108,7 +116,9 @@
                 <TextBlock Text="账号" Classes="section"/>
                 <Border Classes="card"><StackPanel Spacing="12">
                   <StackPanel Spacing="4"><TextBlock Text="微软登录应用 ID" FontWeight="SemiBold"/><TextBlock Text="可选。离线账号无需填写；申请方法见仓库 README。" Classes="muted" FontSize="12"/></StackPanel>
-                  <TextBox x:Name="ClientBox" Watermark="Microsoft OAuth Client ID"/>
+                  <TextBox x:Name="ClientBox" Watermark="Microsoft OAuth Client ID（公开应用标识，不是密钥）"/>
+                  <TextBlock Text="桌面应用回调：http://localhost；账号类型：个人 Microsoft 账号。Minecraft API 访问权限需要另外确认。" Classes="muted" FontSize="12"/>
+                  <Grid ColumnDefinitions="*,240"><StackPanel Spacing="4" VerticalAlignment="Center" Margin="0,0,24,0"><TextBlock Text="微软登录方式" FontWeight="SemiBold"/><TextBlock Text="浏览器回调不可用时，可改用设备代码。" Classes="muted" FontSize="12"/></StackPanel><ComboBox Grid.Column="1" x:Name="LoginMethodBox" HorizontalAlignment="Stretch"><ComboBoxItem Content="系统浏览器（推荐）"/><ComboBoxItem Content="设备代码"/></ComboBox></Grid>
                 </StackPanel></Border>
               </StackPanel>
               <Button Content="保存设置" Click="SaveSettingsClick" Classes="primary" HorizontalAlignment="Right" MinWidth="120"/>

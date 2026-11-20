@@ -8,17 +8,13 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
-using CmlLib.Core.Auth.Microsoft;
-using CmlLib.Core.Auth.Microsoft.Sessions;
 using CmlLib.Core.Installers;
 using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.VersionMetadata;
 using CmlLib.Core.VersionLoader;
 using CmlLib.Core.FileExtractors;
-using Microsoft.Identity.Client;
 using Tmcl.Core;
-using XboxAuthNet.Game.Accounts;
-using XboxAuthNet.Game.Msal;
+using Tmcl.Auth;
 
 namespace Tmcl.App;
 
@@ -27,10 +23,8 @@ public partial class MainWindow : Window
     private readonly Settings settings = Settings.Load();
     private CancellationTokenSource? operation;
     private IVersionMetadata[] versions = [];
-    private IPublicClientApplication? msal;
-    private string? activeClientId;
-    private JELoginHandler? login;
-    private MSession? session;
+    private readonly MicrosoftLoginService microsoftLogin = new(Settings.DataPath);
+    private string? verificationUrl;
     private bool busy;
 
     public MainWindow()
@@ -39,6 +33,7 @@ public partial class MainWindow : Window
         PathBox.Text = settings.GamePath;
         JavaBox.Text = settings.JavaPath;
         ClientBox.Text = settings.ClientId;
+        LoginMethodBox.SelectedIndex = settings.MicrosoftLoginMethod == "DeviceCode" ? 1 : 0;
         OfflineNameBox.Text = settings.OfflineName;
         AccountModeBox.SelectedIndex = settings.MicrosoftMode ? 1 : 0;
         ThreadsBox.Value = Math.Clamp(settings.Threads, 1, 32);
@@ -123,6 +118,7 @@ public partial class MainWindow : Window
         settings.GamePath = Path.GetFullPath(PathBox.Text?.Trim() is { Length: > 0 } p ? p : settings.GamePath);
         settings.JavaPath = JavaBox.Text?.Trim() ?? "";
         settings.ClientId = ClientBox.Text?.Trim() ?? "";
+        settings.MicrosoftLoginMethod = LoginMethodBox.SelectedIndex == 1 ? "DeviceCode" : "Browser";
         settings.OfflineName = OfflineNameBox.Text?.Trim() ?? "Player";
         settings.MicrosoftMode = AccountModeBox.SelectedIndex == 1;
         settings.Threads = Math.Clamp((int)(ThreadsBox.Value ?? 8), 1, 32);
@@ -156,7 +152,18 @@ public partial class MainWindow : Window
         Progress.Value = 0;
         Progress.IsIndeterminate = true;
         try { SaveSettings(); await action(operation.Token); }
-        catch (OperationCanceledException) when (operation.IsCancellationRequested) { StatusText.Text = "操作已取消，可重新下载继续校验已有文件。"; }
+        catch (OperationCanceledException) when (operation.IsCancellationRequested)
+        {
+            StatusText.Text = "操作已取消。可以重新登录，或重新下载继续校验已有文件。";
+            AuthStatusText.Text = "";
+            if (microsoftLogin.Session == null) AccountText.Text = "微软账号未登录，离线账号可直接使用。";
+        }
+        catch (AuthenticationException ex)
+        {
+            AuthStatusText.Text = ex.Message;
+            StatusText.Text = "微软登录：" + ex.Message;
+            if (microsoftLogin.Session == null) AccountText.Text = "微软账号未登录，离线账号可直接使用。";
+        }
         catch (Exception ex)
         {
             // Never write full authentication exceptions, request URLs, or launch arguments to disk.
@@ -173,7 +180,7 @@ public partial class MainWindow : Window
     }
     private void SetBusy(bool value)
     {
-        foreach (var control in new Control[] { DownloadButton, LaunchButton, LoginButton, LogoutButton, RefreshButton, SettingsPanel, AccountModeBox, OfflineNameBox, VersionBox, SnapshotBox, LocalOnlyBox })
+        foreach (var control in new Control[] { DownloadButton, LaunchButton, LoginButton, SwitchAccountButton, LogoutButton, ConfigureLoginButton, RefreshButton, SettingsPanel, AccountModeBox, OfflineNameBox, VersionBox, SnapshotBox, LocalOnlyBox })
             control.IsEnabled = !value;
         CancelButton.IsEnabled = value;
     }
@@ -210,10 +217,10 @@ public partial class MainWindow : Window
         {
             if (settings.MicrosoftMode)
             {
-                if (session == null || login == null || activeClientId != settings.ClientId)
-                    throw new InvalidOperationException("请先登录微软账号，或切换为离线账号。");
-                StatusText.Text = "正在刷新账号授权…";
-                launchSession = session = await login.AuthenticateSilently(token);
+                StatusText.Text = "正在恢复并刷新微软授权…";
+                var result = await microsoftLogin.SignIn(settings.ClientId, false, false, LoginMethod, LoginProgressReporter(), token);
+                launchSession = result.Session;
+                ShowAccount(result);
             }
             else
             {
@@ -269,57 +276,69 @@ public partial class MainWindow : Window
         }
         finally { process.Dispose(); }
     }
-    private async Task EnsureLogin(CancellationToken token)
+    private MicrosoftLoginMethod LoginMethod => settings.MicrosoftLoginMethod == "DeviceCode" ? MicrosoftLoginMethod.DeviceCode : MicrosoftLoginMethod.Browser;
+    private IProgress<LoginProgress> LoginProgressReporter() => new Progress<LoginProgress>(progress =>
     {
-        if (!Guid.TryParse(settings.ClientId, out _))
-            throw new InvalidOperationException("请在设置中填写你自己的 Microsoft OAuth Client ID；申请方法见 README。离线账号无需配置。");
-        if (login != null && activeClientId == settings.ClientId) return;
-        session = null;
-        Directory.CreateDirectory(Settings.DataPath);
-        msal = MsalClientHelper.BuildApplication(settings.ClientId);
+        if (!busy || operation?.IsCancellationRequested == true) return;
+        AuthStatusText.Text = progress.Message;
+        StatusText.Text = progress.Message;
+        AuthCodePanel.IsVisible = progress.UserCode != null;
+        AuthCodeBox.Text = progress.UserCode ?? "";
+        verificationUrl = MicrosoftLoginService.IsVerificationUrl(progress.VerificationUrl) ? progress.VerificationUrl : null;
+        AuthVerificationText.Text = verificationUrl ?? "";
+        OpenVerificationButton.IsEnabled = verificationUrl != null;
+        if (progress.UserCode != null) Dispatcher.UIThread.Post(() => AuthCodePanel.BringIntoView());
+    });
+    private void ShowAccount(LoginResult result)
+    {
+        AccountText.Text = "微软账号：" + result.Session.Username;
+        AuthStatusText.Text = result.SecureCacheAvailable
+            ? "授权已保存在系统安全存储中，下次可恢复登录。"
+            : "系统安全存储不可用，本次授权仅保留在内存中；关闭启动器后需要重新登录。";
+    }
+    private async Task SignInMicrosoft(bool chooseAccount, CancellationToken token)
+    {
+        AuthStatusText.Text = "正在准备微软授权…";
         try
         {
-            var cacheSettings = new MsalCacheSettings
-            {
-                CacheDir = Settings.DataPath, CacheFileName = "msal.cache",
-                KeyChainServiceName = "TMCL", KeyChainAccountName = settings.ClientId,
-                LinuxKeyRingSchema = "com.tmcl.token", LinuxKeyRingLabel = "TMCL Microsoft login"
-            };
-            var helper = await Microsoft.Identity.Client.Extensions.Msal.MsalCacheHelper.CreateAsync(cacheSettings.ToStorageCreationPropertiesBuilder().Build());
-            helper.VerifyPersistence();
-            helper.RegisterCache(msal.UserTokenCache);
+            var result = await microsoftLogin.SignIn(settings.ClientId, true, chooseAccount, LoginMethod, LoginProgressReporter(), token);
+            ShowAccount(result);
+            AccountModeBox.SelectedIndex = 1;
+            settings.MicrosoftMode = true;
+            settings.Save();
+            StatusText.Text = "微软账号登录成功。";
         }
-        catch { msal = MsalClientHelper.BuildApplication(settings.ClientId); StatusText.Text = "系统安全存储不可用，本次登录仅保留在内存中。"; }
-        var manager = new InMemoryXboxGameAccountManager(JEGameAccount.FromSessionStorage);
-        var account = manager.NewAccount();
-        manager.Accounts.Add(account);
-        login = new JELoginHandlerBuilder().WithAccountManager(manager)
-            .WithOAuthProvider(new XboxAuthNet.Game.Msal.OAuth.MsalCodeFlowProvider(msal)).Build();
-        activeClientId = settings.ClientId;
-        token.ThrowIfCancellationRequested();
+        finally
+        {
+            AuthCodePanel.IsVisible = false;
+            AuthCodeBox.Text = "";
+            verificationUrl = null;
+        }
     }
-    private async void LoginClick(object? sender, RoutedEventArgs e) => await RunOperation(async token =>
+    private async void LoginClick(object? sender, RoutedEventArgs e) => await RunOperation(ct => SignInMicrosoft(false, ct));
+    private async void SwitchAccountClick(object? sender, RoutedEventArgs e) => await RunOperation(ct => SignInMicrosoft(true, ct));
+    private async void LogoutClick(object? sender, RoutedEventArgs e) => await RunOperation(async token =>
     {
-        await EnsureLogin(token);
-        StatusText.Text = "请在系统浏览器中完成微软授权…";
-        var authenticator = login!.CreateAuthenticatorWithDefaultAccount(token);
-        authenticator.AddMsalOAuth(msal!, b => b.SystemBrowser());
-        authenticator.AddXboxAuthForJE(b => b.Basic());
-        authenticator.AddForceJEAuthenticator();
-        session = await authenticator.ExecuteForLauncherAsync();
-        AccountText.Text = session.Username;
-        AccountModeBox.SelectedIndex = 1;
-        StatusText.Text = "微软账号登录成功。";
-    });
-    private async void LogoutClick(object? sender, RoutedEventArgs e) => await RunOperation(async _ =>
-    {
-        if (msal != null) await MsalClientHelper.RemoveAccounts(msal);
-        login?.AccountManager.ClearAccounts();
-        session = null;
-        AccountText.Text = "微软账号未登录，离线账号可直接使用。";
+        // Clear the visible session even if the operating system refuses to update its cache.
         AccountModeBox.SelectedIndex = 0;
-        StatusText.Text = "已退出微软账号，已切换为离线账号。";
+        settings.MicrosoftMode = false;
+        settings.Save();
+        AccountText.Text = "微软账号未登录，离线账号可直接使用。";
+        AuthStatusText.Text = "";
+        await microsoftLogin.SignOut(settings.ClientId, token);
+        StatusText.Text = "已退出微软账号并清除本地授权，已切换为离线账号。";
     });
+    private void ConfigureLoginClick(object? sender, RoutedEventArgs e)
+    {
+        ShowPage(true);
+        Dispatcher.UIThread.Post(() => { ClientBox.BringIntoView(); ClientBox.Focus(); });
+    }
+    private void OpenVerificationClick(object? sender, RoutedEventArgs e)
+    {
+        if (!MicrosoftLoginService.IsVerificationUrl(verificationUrl)) return;
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(verificationUrl!) { UseShellExecute = true }); }
+        catch { AuthStatusText.Text = "无法自动打开浏览器，请复制上面的微软验证地址到浏览器。"; }
+    }
     private void CancelClick(object? sender, RoutedEventArgs e) { operation?.Cancel(); CancelButton.IsEnabled = false; }
     private async void FolderClick(object? sender, RoutedEventArgs e)
     {

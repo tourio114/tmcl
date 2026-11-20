@@ -9,7 +9,7 @@
 - 自动检测 Java 主版本和架构，缺少时自动安装并校验 Temurin OpenJDK。
 - 多线程下载、BMCLAPI / 官方源切换、测速、IPv4 地区检测，中国地区默认 BMCLAPI；手动选择优先。
 - 两套界面：**Fluent 2** 与 Claude。每套支持浅色、深色、跟随系统，立即生效、保存、重启恢复。
-- 最新待完成需求：参考 HMCL 的实现，给 TMCL 添加 **Forge / Fabric 安装功能**。
+- 当前优先任务：完善微软账号登录，客户端重构已完成，真实账号授权仍需用户自己的 Client ID。此前要求的 **Forge / Fabric 安装功能**继续保留为待办。
 - 服务器只有约 4 GB 内存。优先测试 1.8.9；不要启动较新 Minecraft 进行高负载测试。1.8.9 实测使用 1024 MB 堆内存。
 
 ## 仓库与环境
@@ -26,7 +26,7 @@
 
 - 桌面 UI：Avalonia 11.3.9，FluentTheme，非网页、非真正的 WinUI 3。
 - 游戏核心：CmlLib.Core 4.1.0。
-- 微软登录：CmlLib.Core.Auth.Microsoft 3.4.0、XboxAuthNet.Game.Msal 0.2.0，系统浏览器授权。用户尚无自己的 Client ID，不能宣称真实账号登录已实测。
+- 微软登录模块：`src/Tmcl.Auth`；依赖 CmlLib.Core.Auth.Microsoft 3.4.0、XboxAuthNet.Game.Msal 0.2.0，系统浏览器授权。用户尚无自己的 Client ID，不能宣称真实账号登录已实测。
 - 程序程序集版本为 **0.10.0**。
 - 已正式发布 **v0.10**：https://github.com/tourio114/tmcl/releases/tag/v0.10
 - v0.10 指向提交 `c145bc9141adaab7a323ab77c5171e845a17dc1f`，包含六个平台包和 SHA256SUMS.txt。资产的大小与 GitHub 返回的 SHA-256 已核对。
@@ -48,7 +48,7 @@
 - `src/Tmcl.Core/DownloadSources.cs`：强制 IPv4 的地区检测、官方/BMCLAPI测速与推荐。
 - `src/Tmcl.Core/FallbackVersionLoader.cs`：在线列表失败时回退本地已安装版本。
 - `tools/Tmcl.Smoke`：实际下载、Java 安装和游戏进程测试。
-- `tests/Tmcl.Tests`：当前 **31 项测试**，覆盖下载、镜像、取消、Java 解析与下载源选择。
+- `tests/Tmcl.Tests`：当前 **61 项测试**，覆盖下载、镜像、取消、Java 解析与下载源选择。
 - `scripts/package.py`：Windows ZIP、Linux TAR.GZ、macOS .app TAR.GZ；Mac 进行临时签名，没有公证。
 - `.github/workflows/build.yml`：六种架构构建。两个 macOS 包均在 **macos-15-intel** 上交叉发布。
 - `docs/VALIDATION.md`：验证记录与限制；README 有实际 UI 截图。
@@ -131,9 +131,9 @@ Linux 实测所需依赖包括 `x11-xserver-utils`（提供 xrandr）；缺失�
 - 实测 Forge 1.8.9；Fabric 用官方支持的版本测试查询/安装，不在这台低配服务器启动较新游戏。
 - 更新 README / 验证记录，上传 GitHub 并核对 CI。没有用户新授权时不改写 v0.10 发布。
 
-## 最新暂停与微软登录交接
+## 2026-11-19 暂停交接（已于 2026-11-20 恢复）
 
-- 用户明确表示先睡觉、明天再继续；当前暂停，不自动继续重构、安装加载器或发布。
+- 用户曾要求暂停；已于 2026-11-20 明确说“接着搞吧”，暂停请求已撤销。当前优先完善微软登录，保留 Forge/Fabric 待办。
 - 明天优先任务：研究并完善微软账号登录。用户此前说可继续重构，但最后要求暂停；恢复后先检查现有实现，避免重复造轮子。
 - 本次仅阅读现有登录代码与官方文档，没有修改应用代码，也没有改动已发布的 v0.10。
 - 现有路径：MainWindow.EnsureLogin / LoginClick → MSAL 系统浏览器 → Xbox Live / XSTS → Minecraft profile。已有登录按钮、退出、Client ID 设置、系统安全缓存及内存回退。
@@ -142,3 +142,13 @@ Linux 实测所需依赖包括 `x11-xserver-utils`（提供 xrandr）；缺失�
 - Minecraft 旧帮助文章目前浏览工具只能读取页面框架，不能据此确认现行审批流程；https://aka.ms/mce-reviewappid 仍重定向到 forms.office.com，但表单正文未能读取，不能保证申请可用或一定获批。
 - 用户尚未提供自己的 Client ID；真实微软账号授权仍未端到端验证。不要声称已登录成功，也不要借用 HMCL / 其他启动器的 Client ID。
 - 后续应先明确用户是在配置 TMCL 的开发者应用，还是在使用已配置的启动器登录；再验证注册、回调、Xbox / Minecraft 服务访问与错误提示。Forge / Fabric 仍仅完成研究，未实现。
+
+
+## 2026-11-20 微软登录重构
+
+- 新增 `src/Tmcl.Auth`，包含 MicrosoftLoginService（状态与互斥）、MsalLoginBackend（MSAL/安全缓存/Xbox/JE）、AuthenticationErrors（固定且不泄露令牌的错误提示）。App 已改用此模块。
+- 支持系统浏览器和设备代码，普通登录优先尝试单个缓存账号；切换账号明确要求交互；在线启动只静默恢复，缺少授权时提示用户登录。
+- 安全缓存按 Client ID 隔离；不支持安全存储时只用内存，不存明文令牌。退出失败仍清空当前 Session，并可重试清缓存；重启后未登录也可按已配置 Client ID 清除缓存。
+- UI 新增登录方式、切换账号、配置入口与设备代码显示；账户恢复、配置改变、取消、缓存退出失败、并发互斥、错误脱敏和验证地址限制等共 30 项新增测试。当前总计 61 项通过。
+- 详情见 `docs/MICROSOFT_LOGIN.md`。微软真实授权仍缺用户自己的可用 Client ID，不能宣称已验证真实账号。Forms 页面仅能确认重定向与框架，不能保证当前申请可提交或获批。
+- 尚未实现 Forge/Fabric；不要把此前研究当成功能完成。没有用户新授权时不改写 v0.10 发布。

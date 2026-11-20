@@ -28,7 +28,7 @@ Fluent 2 界面可从最新 [开发构建](https://github.com/tourio114/tmcl/act
 - 下载源选择：自动 / BMCLAPI / 官方。通过 IPv4 检测地区，中国默认 BMCLAPI、其他地区默认官方；测速后自动模式采用更快的源，手动选择优先。BMCLAPI 请求失败或节点超时会尝试官方源。
 - 1–32 路并发文件下载，已有文件校验、SHA-1 校验、失败重试、取消任务、临时文件清理。重新下载会复用校验通过的文件；尚不支持单文件断点续传。
 - 离线账号（3–16 位英文、数字、下划线），不要求微软登录。离线账号不能连接启用正版验证的服务器。
-- 可选微软账号：MSAL 系统浏览器 OAuth、Xbox Live / XSTS / Minecraft 登录、启动前刷新授权、退出账号。不会收集密码，也不会把启动参数或访问令牌写入日志。
+- 可选微软账号：MSAL 系统浏览器 / 设备代码、Xbox Live / XSTS / Minecraft 登录、安全缓存恢复、启动前刷新授权、切换账号与退出。不会收集密码，也不会把启动参数或访问令牌写入日志。
 - 根据游戏元数据检测所需 Java 主版本和架构，搜索启动器缓存、`JAVA_HOME`、`PATH`。没有匹配版本时自动安装 **Eclipse Temurin OpenJDK**，校验 SHA-256、解压后运行 `java -version` 验证；也可手动指定 Java。
 - 内存设置、游戏目录选择；GitHub Actions 生成六种独立运行包。
 
@@ -58,15 +58,13 @@ macOS 包进行临时签名，没有 Apple Developer 公证；首次打开可在
 
 ## 可选：配置微软登录
 
-**没有 Client ID 也可以使用离线账号和下载功能。** 仓库不内置其他启动器的应用 ID，也不需要 Client Secret。
+**没有 Client ID 也可以使用离线账号和下载功能。** 微软登录需要你自己的应用注册和相应的 Minecraft 服务访问资格。
 
-1. 用自己的 Microsoft 账号登录 [Microsoft Entra 管理中心](https://entra.microsoft.com/)，进入“应用注册 → 新注册”。如账号无法创建目录或应用，需要先解决该账号的 Entra 租户资格。
-2. 选择支持个人 Microsoft 账号的账号类型。添加“移动和桌面应用程序”平台，设置系统浏览器回调地址为 `http://localhost`，按注册页面要求启用公共客户端流程。
-3. 复制“应用程序（客户端）ID”，填入 TMCL 设置的 **Microsoft OAuth Client ID**。这是公开标识，不是密码；不要填写应用密钥。
-4. 参考 [Minecraft Java Edition Game Service API 申请说明](https://help.minecraft.net/hc/en-us/articles/16254801392141)申请该应用对 Minecraft 服务的访问权限；注册 Azure 应用本身不等于获得 Minecraft API 权限。
-5. 点击“登录微软账号”，在系统浏览器中完成授权。账号需要拥有 Minecraft Java Edition，并满足 Xbox 账号要求。API 权限未批准、账号没有游戏或儿童账号限制时，微软登录可能无法完成。
+1. 注册支持个人 Microsoft 账号的桌面应用，浏览器回调为 `http://localhost`。
+2. 在“启动器设置 → 账号”填写 Client ID，选择系统浏览器或设备代码，保存设置。
+3. 点击“登录微软账号”完成授权；需要更换身份时点击“切换微软账号”。
 
-参考：[微软桌面应用注册文档](https://learn.microsoft.com/en-us/entra/identity-platform/scenario-desktop-app-registration)、[CmlLib 的跨平台 MSAL 登录](https://cmllib.github.io/CmlLib.Core-wiki/en/auth.microsoft/cmllib.core.auth.microsoft/authentication-with-msal/)。实际账号授权必须由账号持有人操作，API 审核由微软决定。
+完整注册步骤、设备代码所需的公共客户端设置、API 访问申请入口、缓存行为与错误处理见 [微软登录配置指南](docs/MICROSOFT_LOGIN.md)。真实账号端到端验证仍需你自己的已授权 Client ID。
 
 ## 本地开发与验证
 

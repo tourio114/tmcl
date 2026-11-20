@@ -8,6 +8,7 @@ public sealed class Settings
     public string OfflineName { get; set; } = "Player";
     public bool MicrosoftMode { get; set; }
     public string ClientId { get; set; } = "";
+    public string MicrosoftLoginMethod { get; set; } = "Browser";
     public string JavaPath { get; set; } = "";
     public string Version { get; set; } = "1.8.9";
     public int Threads { get; set; } = 8;
