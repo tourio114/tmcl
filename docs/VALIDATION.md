@@ -38,3 +38,5 @@
 - 覆盖配置校验、Client ID 归一化和切换、静默恢复策略、账号切换策略、取消后不发布会话、离线会话不能冒充在线会话、退出失败清空会话且可重试、重启后清缓存、并发互斥、错误脱敏与验证地址限制。
 - 在 Linux 原生窗口中点击无 Client ID 的微软登录，显示配置提示并保留离线账号；“配置微软登录”能定位设置字段；设备代码选项能够选择和保存。
 - 尚未使用已获授权的真实 Client ID，浏览器 OAuth、设备代码、系统钥匙串写入和 Xbox/Minecraft 服务端授权没有端到端成功记录。自动化和界面检查不能代替这些验证。
+
+- 对应代码提交 `fc786155b94e5cbfb13a8ed46bb4edb906750c7f` 的 Windows / Linux / macOS x64、ARM64 六种 GitHub Actions 构建均已成功：[构建记录](https://github.com/tourio114/tmcl/actions/runs/44644602959)。

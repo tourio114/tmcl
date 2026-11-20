@@ -1,5 +1,7 @@
 # 配置 TMCL 微软登录
 
+本文适用于包含 `Tmcl.Auth` 模块的 main 开发构建：[下载页面](https://github.com/tourio114/tmcl/actions/workflows/build.yml)。已发布的 v0.10 尚不包含本次新增的设备代码与账号恢复功能。
+
 TMCL 的微软登录入口和客户端流程已实现。真正完成在线账号验证，还需要你自己的 Microsoft 应用 Client ID，以及该应用访问 Minecraft 服务的资格。没有配置时，离线账号和游戏下载仍可正常使用。
 
 ## 先准备什么

@@ -8,7 +8,7 @@
 
 ## 界面与主题
 
-Fluent 2 界面可从最新 [开发构建](https://github.com/tourio114/tmcl/actions/workflows/build.yml) 下载；已发布的 v0.10 保留原发布内容。
+Fluent 2 界面与重构后的微软登录（含设备代码）可从最新 [开发构建](https://github.com/tourio114/tmcl/actions/workflows/build.yml) 下载；已发布的 v0.10 保留原发布内容。
 
 打开左侧 **启动器设置 → 外观**。Fluent 2 风格参考微软的 [布局](https://fluent2.microsoft.design/layout)、[形状](https://fluent2.microsoft.design/shapes) 与 [颜色](https://fluent2.microsoft.design/color) 指南，通过 Avalonia 实现：
 
